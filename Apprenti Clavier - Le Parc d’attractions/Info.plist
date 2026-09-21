@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleName</key>
+	<string>Apprenti Clavier</string>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>fr</string>
+	<key>SUPublicEDKey</key>
+	<string>COoPBlMhgbZLr17JlBLeS+bcFO/ob7+cfSnhNH2+KUU=</string>
+	<key>SUFeedURL</key>
+	<string>https://raw.githubusercontent.com/Orel3713/Apprenti-Clavier-Le-Parc-d-attractions/main/appcast.xml</string>
+	<key>SUEnableInstallerLauncherService</key>
+	<true/>
+</dict>
+</plist>
