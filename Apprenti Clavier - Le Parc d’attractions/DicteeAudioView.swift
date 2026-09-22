@@ -265,7 +265,7 @@ private struct CommentJouerDicteeAudioView: View {
                 Text("Dans ce jeu, chaque phrase est d’abord lue entièrement, puis une seconde fois avec un bip à la place du mot à retrouver.")
                 Text("Après cette seconde lecture, un petit bip différent indique que vous pouvez saisir votre réponse.")
                 Text("Saisissez uniquement le mot manquant. Il n’est pas nécessaire d’appuyer sur Entrée : la réponse est validée automatiquement dès que la longueur attendue est atteinte.")
-                Text("La touche Commande permet de réécouter la phrase complète. La touche Option permet de réécouter la phrase avec le mot manquant remplacé par le bip.")
+                Text("Avec ou sans VoiceOver, appuyez sur la touche Commande pour réécouter la phrase complète, ou sur la touche Option pour réécouter la phrase avec le mot manquant remplacé par le bip.")
                 Text("Les majuscules ne sont pas prises en compte, mais les accents doivent être respectés. Une réponse incorrecte compte pour une erreur.")
                 Text("Plus vous progressez, plus les phrases sont nombreuses et le vocabulaire varié. Chaque phrase contient toujours un seul mot à retrouver.")
 

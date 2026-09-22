@@ -1167,7 +1167,7 @@ private struct CommentJouerGrandeRoueView: View {
                 Text("Si la roue s’arrête complètement, la partie continue : tapez correctement l’élément proposé pour la relancer. Une erreur lui fait perdre une grande partie de son élan, mais les tours déjà accomplis restent acquis.")
                 Text("Un son bref marque chaque tour complet. La partie dure 60 secondes et continue jusqu’à la fin du temps, même si l’objectif est déjà atteint.")
                 Text("Au niveau 6, tapez les noms de villes sans majuscule. Les accents et les espaces doivent être saisis.")
-                Text("Appuyez sur la touche Commande pour réentendre l’élément en cours.")
+                Text("Avec VoiceOver activé, appuyez sur la touche Commande pour réentendre l’élément en cours. Sans VoiceOver, l’élément est affiché à l’écran ; la touche Commande ne déclenche pas de lecture vocale.")
 
                 HStack {
                     Spacer()

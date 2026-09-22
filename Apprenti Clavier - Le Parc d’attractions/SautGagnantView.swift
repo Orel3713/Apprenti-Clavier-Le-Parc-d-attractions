@@ -315,7 +315,8 @@ struct SautGagnantView: View {
     }
 
     private func relireMot() {
-        guard ecran == .partie, partieActive, !motActuel.isEmpty else { return }
+        guard NSWorkspace.shared.isVoiceOverEnabled,
+              ecran == .partie, partieActive, !motActuel.isEmpty else { return }
         LecteurMotSautGagnant.shared.lire(motActuel)
     }
 
@@ -425,7 +426,7 @@ private struct CommentJouerSautGagnantView: View {
                 Text("Tapez correctement les deux mots ainsi que l’espace qui les sépare pour faire sauter votre acrobate de plate-forme en plate-forme jusqu’à l’arrivée. La longueur des deux mots fait varier la distance du saut.")
                 Text("Un son indique chaque saut réussi. En cas d’erreur, un son différent vous avertit et votre acrobate reste sur sa dernière plate-forme afin que vous puissiez réessayer.")
                 Text("Lorsque votre acrobate atteint la plate-forme d’arrivée, un son de victoire indique que le niveau est réussi.")
-                Text("Appuyez sur la touche Commande pour réécouter le couple de mots en cours.")
+                Text("Avec VoiceOver activé, le couple de mots est lu automatiquement. Appuyez sur la touche Commande pour le réécouter. Sans VoiceOver, lisez le couple de mots affiché à l’écran ; la touche Commande ne déclenche pas de lecture vocale.")
 
                 HStack {
                     Spacer()

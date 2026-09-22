@@ -2069,7 +2069,7 @@ struct CommentJouerBallonsView:
             )
 
             Text(
-                "Appuyez à tout moment sur la touche Commande pour réentendre l’élément du ballon."
+                "Avec VoiceOver activé, appuyez sur la touche Commande pour réentendre l’élément du ballon. Sans VoiceOver, l’élément est affiché à l’écran ; la touche Commande ne déclenche pas de lecture vocale."
             )
 
             HStack {

@@ -384,8 +384,10 @@ private struct CommentJouerDefiEclairView: View {
 
             Text("Il n’est pas nécessaire d’appuyer sur Entrée pour valider. Dès que le nombre de caractères attendu est saisi, la réponse est enregistrée silencieusement et l’élément suivant apparaît. Les résultats sont annoncés uniquement à la fin du niveau.")
 
+            Text("Avec VoiceOver activé, appuyez puis relâchez la touche Commande seule pour réécouter le caractère, le mot ou l’élément en cours. Cette répétition volontaire ne suspend pas le chronomètre. Sans VoiceOver, l’élément est affiché à l’écran ; la touche Commande ne déclenche pas de lecture vocale.")
+
             if NSWorkspace.shared.isVoiceOverEnabled {
-                Text("Avec VoiceOver, chaque élément est lu automatiquement. La zone de saisie reste volontairement silencieuse et n’est pas annoncée comme un champ de texte. Dès que la voix du jeu a terminé d’énoncer la lettre, le mot ou l’élément demandé, saisissez-le directement au clavier : la zone de saisie est déjà active. Appuyez sur la touche Commande pour réécouter l’élément si nécessaire ; cette répétition volontaire ne suspend pas le chronomètre.")
+                Text("Avec VoiceOver, chaque élément est lu automatiquement. La zone de saisie reste volontairement silencieuse et n’est pas annoncée comme un champ de texte. Dès que la voix du jeu a terminé d’énoncer la lettre, le mot ou l’élément demandé, saisissez-le directement au clavier : la zone de saisie est déjà active.")
             }
 
             Button("J’ai compris") {
@@ -865,7 +867,9 @@ private struct NiveauSaisieDefiEclair: View {
         .frame(minWidth: 760, minHeight: 560)
         .background(
             CaptureCommandeDefiEclair(
-                actif: etape == .jeu,
+                actif: etape == .jeu
+                    && chronometreActif
+                    && NSWorkspace.shared.isVoiceOverEnabled,
                 action: repeterElement
             )
             .frame(width: 0, height: 0)
@@ -966,7 +970,7 @@ private struct NiveauSaisieDefiEclair: View {
                             traiterSaisie(caractere)
                         },
                         entreePressee: {
-                            // Entrée n'est plus utilisée pour la réécoute.
+                            // La réécoute utilise Commande seule, pas Entrée.
                         }
                     )
                 }
@@ -1186,7 +1190,8 @@ private struct NiveauSaisieDefiEclair: View {
     }
 
     private func repeterElement() {
-        guard etape == .jeu, !elementCourant.isEmpty else { return }
+        guard NSWorkspace.shared.isVoiceOverEnabled,
+              etape == .jeu, !elementCourant.isEmpty else { return }
 
         // La répétition volontaire ne suspend pas le chronomètre.
         champEnFocus = false
@@ -1366,7 +1371,11 @@ private struct CaptureCommandeDefiEclair: NSViewRepresentable {
                 [weak self] evenement in
                 guard let self else { return evenement }
 
-                guard actif else { return evenement }
+                guard actif, NSWorkspace.shared.isVoiceOverEnabled else {
+                    commandeCandidate = false
+                    combinaisonEnCours = false
+                    return evenement
+                }
 
                 if evenement.type == .keyDown {
                     if commandeCandidate {

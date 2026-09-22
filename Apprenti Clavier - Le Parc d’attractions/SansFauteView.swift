@@ -1,9 +1,12 @@
 import SwiftUI
 import AppKit
 import AVFoundation
+import Combine
 
 struct SansFauteView: View {
     let retourParc: () -> Void
+
+    @StateObject private var lecteurVocal = LecteurVocalSansFaute()
 
     @State private var ecran: EcranSansFaute = .niveaux
     @State private var niveauSelectionne = 1
@@ -222,7 +225,7 @@ struct SansFauteView: View {
                             .foregroundStyle(.purple.opacity(0.8))
                             .accessibilityHidden(true)
 
-                        Text("Mot annoncé par VoiceOver")
+                        Text("Écoutez le mot")
                             .font(.title2).bold()
                             .accessibilityHidden(true)
                         Text("Tapez directement au clavier. Commande permet de réécouter le mot.")
@@ -378,7 +381,9 @@ struct SansFauteView: View {
         }
 
         avancerMot()
-        VoiceOverAnnouncer.annoncerTexte("\(serieCourante) sur \(configuration.objectif). \(annonceMot(motActuel))", apres: 0.35)
+        lecteurVocal.lire(annonceMot(motActuel),
+                           texteVoiceOver: "\(serieCourante) sur \(configuration.objectif). \(annonceMot(motActuel))",
+                           apres: 0.35)
     }
 
     private func erreurDeFrappe() {
@@ -395,7 +400,9 @@ struct SansFauteView: View {
         }
 
         remelangerApresErreur()
-        VoiceOverAnnouncer.annoncerTexte("\(secondesRestantes) secondes restantes. \(annonceMot(motActuel))", apres: 0.65)
+        lecteurVocal.lire(annonceMot(motActuel),
+                           texteVoiceOver: "\(secondesRestantes) secondes restantes. \(annonceMot(motActuel))",
+                           apres: 0.65)
     }
 
     private func avancerMot() {
@@ -422,11 +429,11 @@ struct SansFauteView: View {
 
     private func reannoncerMot() {
         guard partieEnCours, !partieTerminee, compteARebours == nil else { return }
-        VoiceOverAnnouncer.annoncerTexte(annonceMot(motActuel))
+        lecteurVocal.lire(annonceMot(motActuel))
     }
 
     private func annoncerMotActuel(apres delai: Double) {
-        VoiceOverAnnouncer.annoncerTexte(annonceMot(motActuel), apres: delai)
+        lecteurVocal.lire(annonceMot(motActuel), apres: delai)
     }
 
     private func annonceMot(_ mot: String) -> String {
@@ -447,6 +454,7 @@ struct SansFauteView: View {
     }
 
     private func terminerPartie(reussi: Bool) {
+        lecteurVocal.arreter()
         partieEnCours = false
         partieTerminee = true
         niveauReussi = reussi
@@ -474,6 +482,7 @@ struct SansFauteView: View {
     }
 
     private func arreterPartie() {
+        lecteurVocal.arreter()
         partieEnCours = false
         compteARebours = nil
         dateDebut = nil
@@ -541,7 +550,7 @@ private struct ConfigurationSansFaute: Identifiable {
     static let toutes: [ConfigurationSansFaute] = [
         .init(numero: 1, titre: "Véhicules et transports", objectif: 8, duree: 60, mots: ["voiture","camion","autobus","tracteur","hélicoptère","locomotive","ambulance","caravane","remorque","scooter","trottinette","bicyclette","métro","tramway","fusée","navette","limousine","décapotable","téléphérique","corbillard"], consigneSupplementaire: nil),
         .init(numero: 2, titre: "Nature", objectif: 9, duree: 60, mots: ["algue","forêt","étang","buisson","montagne","champignon","rivière","cascade","prairie","falaise","rocher","vallée","colline","fougère","sentier","volcan","branche","racine","pétale","mousse"], consigneSupplementaire: nil),
-        .init(numero: 3, titre: "Prénoms", objectif: 10, duree: 60, mots: ["Antoine","Aurélie","Baptiste","Caroline","Émilie","Fabien","Christophe","Isabelle","Raymond","Juliette","Laurent","Mélanie","Nicolas","Pauline","Guillaume","Sébastien","Stéphanie","Théo","Valérie","Xavier"], consigneSupplementaire: "Les prénoms commencent par une majuscule. VoiceOver annonce uniquement le prénom."),
+        .init(numero: 3, titre: "Prénoms", objectif: 10, duree: 60, mots: ["Antoine","Aurélie","Baptiste","Caroline","Émilie","Fabien","Christophe","Isabelle","Raymond","Juliette","Laurent","Mélanie","Nicolas","Pauline","Guillaume","Sébastien","Stéphanie","Théo","Valérie","Xavier"], consigneSupplementaire: "Les prénoms commencent par une majuscule. Seul le prénom est prononcé."),
         .init(numero: 4, titre: "La maison", objectif: 10, duree: 60, mots: ["canapé","fauteuil","armoire","commode","matelas","vaisselle","couverture","baignoire","douche","lavabo","miroir","serviette","casserole","assiette","fourchette","couteau","placard","réfrigérateur","aspirateur","poubelle"], consigneSupplementaire: nil),
         .init(numero: 5, titre: "Métiers", objectif: 11, duree: 60, mots: ["boulanger","coiffeur","chirurgien","pharmacien","facteur","pompier","policier","serveur","cuisinier","jardinier","mécanicien","électricien","plombier","architecte","animateur","journaliste","photographe","professeur","libraire","footballeur"], consigneSupplementaire: nil),
         .init(numero: 6, titre: "Vêtements et accessoires", objectif: 11, duree: 60, mots: ["pantalon","chemise","chaussette","écharpe","bonnet","casquette","manteau","blouson","bottine","maillot","chaussure","gourmette","ceinture","cravate","bracelet","collier","sandale","culotte","salopette","imperméable"], consigneSupplementaire: nil),
@@ -564,12 +573,12 @@ private struct CommentJouerSansFauteView: View {
                     .font(.largeTitle).bold()
                     .accessibilityAddTraits(.isHeader)
                     .accessibilityFocused($titreEnFocus)
-                Text("Dans ce jeu, un mot est annoncé par VoiceOver. Tapez-le directement au clavier : aucun mot n’est affiché et aucun champ de saisie n’est utilisé.")
+                Text("Dans ce jeu, un mot est annoncé vocalement. Tapez-le directement au clavier : aucun mot n’est affiché et aucun champ de saisie n’est utilisé.")
                 Text("Chaque mot correctement tapé fait avancer votre série. Le but est d’enchaîner le nombre de mots demandé par le niveau.")
                 Text("Dès la première mauvaise touche, le son de mauvaise réponse retentit et votre série s’arrête. Il n’est pas possible d’effacer ou de corriger la frappe.")
                 Text("Après une erreur, les mots sont remélangés afin que la nouvelle série ne reproduise pas la précédente.")
                 Text("Chaque niveau commence avec 60 secondes. Après une erreur, la nouvelle tentative dispose de 5 secondes de moins.")
-                Text("Appuyez sur la touche Commande pour réentendre le mot en cours.")
+                Text("Avec ou sans VoiceOver, appuyez sur la touche Commande pour réentendre le mot en cours. Le mot est annoncé vocalement et n’est pas affiché à l’écran.")
                 Button("Fermer") { fermer() }
                     .keyboardShortcut(.cancelAction)
             }
@@ -740,4 +749,46 @@ private final class SonSansFaute {
         catch { NSSound.beep() }
     }
     func arreter() { lecteur?.stop(); lecteur = nil }
+}
+
+/// Lecture des éléments de jeu pour tous, sans doubler les annonces VoiceOver.
+/// Les informations d'interface continuent d'utiliser VoiceOverAnnouncer.
+@MainActor
+private final class LecteurVocalSansFaute: ObservableObject {
+    private let synthetiseur = AVSpeechSynthesizer()
+    private var generationLecture = 0
+
+    func lire(
+        _ texte: String,
+        texteVoiceOver: String? = nil,
+        apres delai: TimeInterval = 0
+    ) {
+        arreter()
+        let generationDemandee = generationLecture
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + delai) { [weak self] in
+            guard let self,
+                  self.generationLecture == generationDemandee else { return }
+
+            // Conserver la voix, les réglages et les informations de VoiceOver.
+            // Hors VoiceOver, employer la même synthèse française que Dictée audio.
+            if NSWorkspace.shared.isVoiceOverEnabled {
+                VoiceOverAnnouncer.annoncerTexte(texteVoiceOver ?? texte)
+            } else {
+                let phrase = AVSpeechUtterance(
+                    string: VoiceOverAnnouncer.textePourPrononciation(texte)
+                )
+                phrase.voice = AVSpeechSynthesisVoice(language: "fr-FR")
+                phrase.rate = AVSpeechUtteranceDefaultSpeechRate
+                self.synthetiseur.speak(phrase)
+            }
+        }
+    }
+
+    func arreter() {
+        // Annuler aussi une lecture différée après une réécoute, un changement
+        // d'élément, la fin de partie ou la fermeture de la vue.
+        generationLecture += 1
+        synthetiseur.stopSpeaking(at: .immediate)
+    }
 }
